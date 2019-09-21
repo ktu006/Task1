@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(dplyr)
+library(reshape2)
 ```
 ##Load Data
 ```{r}
@@ -57,7 +58,7 @@ data_2 <- data_2 %>%
          value = as.numeric(value))
 total_data <- merge(data_1,data_2, by = c ("date","variable"))
 ```
-#calculate the difference between county average room price and the national average room price per month
+#calculate
 ```{r}
 total_data <- total_data %>%
   mutate(value_deduct = value.x - value.y)
@@ -69,19 +70,47 @@ means_years <- total_data %>%
   filter(variable == "Price per room") %>%
   group_by(lubridate::year(date)) %>%
   summarise(mean = mean(value_deduct,na.rm = TRUE))
+colnames(means_region) <- c("region","mean")
+colnames(means_years) <- c("year","mean")
+max_vec <- means_years$mean==max(means_years$mean, na.rm=TRUE)
+max_vec[is.na(max_vec)] <- FALSE
+max_year <- means_years[max_vec,"year"]
+min_vec <- means_years$mean==min(means_years$mean, na.rm=TRUE)
+min_vec[is.na(min_vec)] <- FALSE
+min_year <- means_years[min_vec,"year"]
+max_reg <- means_region$mean==max(means_region$mean, na.rm=TRUE)
+max_reg[is.na(max_reg)] <- FALSE
+max_reg <- means_region[max_reg,"region"]
+min_reg <- means_region$mean==min(means_region$mean, na.rm=TRUE)
+min_reg[is.na(min_reg)] <- FALSE
+min_reg <- means_region[min_reg,"region"]
 ```
+2 dataframes of information were analyzed, they showed the difference between county average room price and the national average room price per month.
+`r max_year` sorts years with their value and shows the year with the highest price.
+`r min_year` sorts years with their value and shows the year with the lowest price.
+`r max_reg` sorts regions with their value and shows the region with the highest price.
+`r min_reg` sorts regions with their value and shows the region with the lowest price.
+
 ##Plot
-```{r}
+
+```{r,echo=FALSE, warning = FALSE}
 total_data %>%
   filter(variable=="Price per room") %>%
   filter(region.x=="19 Troms - Romsa") %>%
   ggplot(aes(x=date, y=value_deduct)) +
-  geom_line(col="blue")
+  geom_line(col="blue") + labs(x = "Date", y = "Price per Room compared to National Average", title = "Monthly price difference for Troms county from 1999 until today") +
+    scale_x_date(breaks='3 years', 
+               limits = c(as.Date("1999-01-01"),Sys.Date()))+
+  theme(text = element_text(family = "Bookman"),
+        title = element_text(color = "yellow",size = 12)) +
+  theme(plot.background = element_rect (fill = "lightgreen"), panel.background = element_rect (fill = "lightgreen"), plot.margin = unit(c(5,10,5,10), units = "mm"))
 ```
+
+The graph shows that room prices in Troms County were mostly below average after 1999. However, since 2016, prices began to change more sharply.
+
 
 ##Question
 ```{r}
-library(reshape2)
 dat_expand <- dcast(total_data,date + region.x ~ variable, value.var = "value.x")
 names(dat_expand) [3:5] <- c ("roomCap","bedCap","priceRoom")
 coler_county <- dat_expand %>%
