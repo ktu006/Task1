@@ -2,7 +2,13 @@
 title: "Task1"
 author: "Kirill Tumanov"
 date: "18 09 2019"
-output: html_document
+output: 
+  html_document:
+    theme: journal
+    highlight: haddock
+    toc: true
+    toc_float: false
+    toc_depth: 4
 ---
 
 ```{r setup, include=FALSE}
@@ -58,7 +64,7 @@ data_2 <- data_2 %>%
          value = as.numeric(value))
 total_data <- merge(data_1,data_2, by = c ("date","variable"))
 ```
-#calculate
+#Calculate
 ```{r}
 total_data <- total_data %>%
   mutate(value_deduct = value.x - value.y)
@@ -86,10 +92,10 @@ min_reg[is.na(min_reg)] <- FALSE
 min_reg <- means_region[min_reg,"region"]
 ```
 2 dataframes of information were analyzed, they showed the difference between county average room price and the national average room price per month.
-`r max_year` sorts years with their value and shows the year with the highest price.
-`r min_year` sorts years with their value and shows the year with the lowest price.
-`r max_reg` sorts regions with their value and shows the region with the highest price.
-`r min_reg` sorts regions with their value and shows the region with the lowest price.
+`max_year` sorts years with their value and shows the year with the highest price.
+`min_year` sorts years with their value and shows the year with the lowest price.
+`max_reg` sorts regions with their value and shows the region with the highest price.
+`min_reg` sorts regions with their value and shows the region with the lowest price.
 
 ##Plot
 
@@ -98,7 +104,8 @@ total_data %>%
   filter(variable=="Price per room") %>%
   filter(region.x=="19 Troms - Romsa") %>%
   ggplot(aes(x=date, y=value_deduct)) +
-  geom_line(col="blue") + labs(x = "Date", y = "Price per Room compared to National Average", title = "Monthly price difference for Troms county from 1999 until today") +
+  geom_line(col="blue") +
+  labs(x = "Date", y = "Price per Room compared to National Average", title = "Monthly price difference for Troms county from 1999 until today") +
     scale_x_date(breaks='3 years', 
                limits = c(as.Date("1999-01-01"),Sys.Date()))+
   theme(text = element_text(family = "Bookman"),
@@ -121,5 +128,7 @@ coler_county <- dat_expand %>%
                            method = "pearson"))
 ```
 
+`dat_expand` shows room, bed and price availability.
+`coler_county` shows the correlation between these 3 variables.
 
 
